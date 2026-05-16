@@ -14,6 +14,7 @@ import { NotFoundException as HttpNotFoundException } from '@nestjs/common';
 import { CustomerDto } from './dto/customer.dto';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
+import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
 
 @Controller('customers')
 export class CustomersController {
@@ -21,14 +22,13 @@ export class CustomersController {
 
   @Get('/')
   getCustomers(
-    @Query('limit') limit?: number,
-    @Query('offset') offset?: number,
-  ): CustomerDto[] {
-    return this.customersService.getAll({ limit, offset });
+    @Query() paginationQueryDto: PaginationQueryDto,
+  ): Promise<CustomerDto[]> {
+    return this.customersService.getAll(paginationQueryDto);
   }
 
   @Get('/:id')
-  getCustomer(@Param('id') id: number): CustomerDto {
+  getCustomer(@Param('id') id: number): Promise<CustomerDto> {
     try {
       return this.customersService.get(id);
     } catch (error: unknown) {
@@ -41,7 +41,7 @@ export class CustomersController {
   }
 
   @Post('/')
-  createCustomer(@Body() body: CreateCustomerDto): CustomerDto {
+  createCustomer(@Body() body: CreateCustomerDto): Promise<CustomerDto> {
     return this.customersService.create(body);
   }
 
@@ -49,12 +49,12 @@ export class CustomersController {
   updateCustomer(
     @Param('id') id: number,
     @Body() body: UpdateCustomerDto,
-  ): CustomerDto {
+  ): Promise<CustomerDto> {
     return this.customersService.update(id, body);
   }
 
   @Delete('/:id')
-  deleteCustomer(@Param('id') id: number): CustomerDto {
+  deleteCustomer(@Param('id') id: number): Promise<CustomerDto> {
     return this.customersService.remove(id);
   }
 }

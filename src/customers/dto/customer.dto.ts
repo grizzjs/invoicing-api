@@ -1,8 +1,8 @@
 export class CustomerDto {
-  id: number;
-  name: string;
-  address: string;
-  phoneNumber: string;
-  email: string;
-  tin: string;
+  readonly id: number;
+  readonly name: string;
+  readonly address: string;
+  readonly phoneNumber: string;
+  readonly email: string;
+  readonly tin: string;
 }
