@@ -1,0 +1,22 @@
+service: serverless-example
+
+plugins:
+  - serverless-offline
+
+build:
+  skip: true
+
+provider:
+  name: aws
+  runtime: nodejs24.x
+
+functions:
+  main:
+    handler: dist/src/main.handler
+    events:
+      - http:
+          method: ANY
+          path: /
+      - http:
+          method: ANY
+          path: '{proxy+}'
