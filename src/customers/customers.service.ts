@@ -4,7 +4,7 @@ import { NotFoundException } from 'src/exceptions';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { CustomerDto } from './dto/customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
-import { Repository } from 'typeorm';
+import { FindManyOptions, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
 
@@ -15,16 +15,41 @@ export class CustomersService {
     private readonly customerRepository: Repository<Customer>,
   ) {}
 
-  async getAll(pagination?: PaginationQueryDto): Promise<CustomerDto[]> {
-    return this.customerRepository.find({
-      skip: pagination?.offset,
-      take: pagination?.limit,
-    });
+  async getCount(options?: FindManyOptions<Customer>): Promise<number> {
+    return this.customerRepository.count(options);
+  }
+  async getAll(
+    search?: string,
+    pagination?: PaginationQueryDto,
+  ): Promise<CustomerDto[]> {
+    if (!search)
+      return this.customerRepository.find({
+        skip: pagination?.offset,
+        take: pagination?.limit,
+      });
+
+    return this.customerRepository
+      .createQueryBuilder('customer')
+      .where('customer.id::text LIKE :search', { search: `${search}%` })
+      .limit(pagination?.limit ?? 5)
+      .offset(pagination?.offset ?? 0)
+      .getMany();
   }
 
   async get(id: number): Promise<CustomerDto> {
-    const customer = await this.customerRepository.findOne({ where: { id } });
-    if (!customer) throw new NotFoundException(`${id}`);
+    const customer = await this.customerRepository
+      .createQueryBuilder('customers')
+      .leftJoinAndSelect(
+        'customers.invoices',
+        'invoice',
+        'invoice.status = :status',
+        { status: 'Unpaid' },
+      )
+      .where({
+        id,
+      })
+      .getOne();
+    if (!customer) throw new NotFoundException(Customer.name, `${id}`);
     return customer;
   }
 
@@ -38,12 +63,7 @@ export class CustomersService {
       id,
       ...customer,
     });
-    if (!customerPreloaded) throw new NotFoundException(`${id}`);
+    if (!customerPreloaded) throw new NotFoundException(Customer.name, `${id}`);
     return this.customerRepository.save(customerPreloaded);
-  }
-
-  async remove(id: number): Promise<CustomerDto> {
-    const customer = await this.get(id);
-    return this.customerRepository.remove(customer);
   }
 }

@@ -1,6 +1,14 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { PurchaseOrder } from './purchase-order.entity';
 import { ColumnNumericTransformer } from 'src/common/util/column-numeric-transformer.util';
+import { DeliveryReceiptLineItem } from 'src/delivery-receipts/entities/delivery-receipt-line-item.entity';
 
 @Entity()
 export class PurchaseOrderLineItem {
@@ -10,7 +18,9 @@ export class PurchaseOrderLineItem {
   @Column()
   name: string;
 
-  @Column()
+  @Column({
+    nullable: true,
+  })
   description: string;
 
   @Column()
@@ -24,6 +34,14 @@ export class PurchaseOrderLineItem {
   })
   unitPrice: number;
 
+  @JoinColumn({ name: 'purchase_order_id' })
   @ManyToOne(() => PurchaseOrder, (purchaseOrder) => purchaseOrder.lineItems)
   purchaseOrder: PurchaseOrder;
+
+  @JoinColumn({ name: 'purchase_order_id' })
+  @OneToMany(
+    () => DeliveryReceiptLineItem,
+    (deliveryReceiptLineItem) => deliveryReceiptLineItem.purchaseOrderLineItem,
+  )
+  deliveries: DeliveryReceiptLineItem[];
 }

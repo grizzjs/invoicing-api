@@ -1,4 +1,11 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Invoice } from 'src/invoices/entities/invoice.entity';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class Customer {
@@ -19,4 +26,14 @@ export class Customer {
 
   @Column()
   tin: string;
+
+  @JoinColumn({ name: 'customer_id' })
+  @OneToMany(() => Invoice, (invoice) => invoice.customer)
+  invoices: Invoice[];
+
+  static of(id: number): Customer {
+    const customer = new Customer();
+    customer.id = id;
+    return customer;
+  }
 }

@@ -20,6 +20,15 @@ class ConfigValidation {
 
   @IsString()
   DB_SCHEMA: string;
+
+  @IsString()
+  S3_HOST: string;
+
+  @IsString()
+  S3_ACCESSKEY: string;
+
+  @IsString()
+  S3_SECRETKEY: string;
 }
 
 export default function validate(configuration: Record<string, unknown>) {
