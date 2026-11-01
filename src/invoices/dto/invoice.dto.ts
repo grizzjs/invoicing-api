@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDate, IsNumber, IsString } from 'class-validator';
+import { IsDate, IsNumber, IsOptional, IsString } from 'class-validator';
+import { CollectionDto } from 'src/collections/dto/collection.dto';
 import { CustomerDto } from 'src/customers/dto/customer.dto';
 import { DeliveryReceiptDto } from 'src/delivery-receipts/dto/delivery-receipt.dto';
 
@@ -38,6 +39,14 @@ export class InvoiceDto {
   readonly officialReceipt: number;
 
   @ApiProperty({
+    description: 'Notes for this invoice',
+    nullable: true,
+  })
+  @IsString()
+  @IsOptional()
+  notes: string;
+
+  @ApiProperty({
     description: 'Customer associated with the invoice',
     type: () => CustomerDto,
   })
@@ -48,4 +57,10 @@ export class InvoiceDto {
     type: [DeliveryReceiptDto],
   })
   deliveryReceipts: DeliveryReceiptDto[];
+
+  @ApiProperty({
+    description: 'Collection associated with the invoice',
+    type: () => CollectionDto,
+  })
+  readonly collection: CollectionDto;
 }

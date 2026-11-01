@@ -30,7 +30,10 @@ export class CustomersService {
 
     return this.customerRepository
       .createQueryBuilder('customer')
-      .where('customer.id::text LIKE :search', { search: `${search}%` })
+      .where('customer.id::text LIKE :search OR customer.notes LIKE :notes', {
+        search: `${search}%`,
+        notes: `%${search}%`,
+      })
       .limit(pagination?.limit ?? 5)
       .offset(pagination?.offset ?? 0)
       .getMany();
@@ -39,12 +42,8 @@ export class CustomersService {
   async get(id: number): Promise<CustomerDto> {
     const customer = await this.customerRepository
       .createQueryBuilder('customers')
-      .leftJoinAndSelect(
-        'customers.invoices',
-        'invoice',
-        'invoice.status = :status',
-        { status: 'Unpaid' },
-      )
+      .leftJoinAndSelect('customers.invoices', 'invoice')
+      .leftJoinAndSelect('invoice.collection', 'collection')
       .where({
         id,
       })

@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsOptional } from 'class-validator';
 import { CustomerDto } from 'src/customers/dto/customer.dto';
 import { InvoiceDto } from 'src/invoices/dto/invoice.dto';
 
@@ -25,7 +26,9 @@ export class CollectionDto {
 
   @ApiProperty({
     description: 'Notes for this collection',
+    nullable: true,
   })
+  @IsOptional()
   notes: string;
 
   @ApiProperty({

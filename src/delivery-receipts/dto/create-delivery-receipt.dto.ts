@@ -1,10 +1,11 @@
-import { ApiProperty, PartialType } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsArray,
   IsDate,
   IsNumber,
   IsObject,
+  IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
@@ -61,6 +62,14 @@ export class CreateDeliveryReceiptDto {
   @ApiProperty({ description: 'Date the delivery receipt was created' })
   @IsDate()
   readonly createDate: Date;
+
+  @ApiPropertyOptional({
+    description: 'Notes for this delivery receipt',
+    nullable: true,
+  })
+  @IsString()
+  @IsOptional()
+  notes: string;
 
   @ApiProperty({
     description: 'Line items of the delivery receipt',

@@ -29,6 +29,7 @@ export class InvoicesService {
       return this.invoiceRepository.find({
         select: {
           customer: {
+            id: true,
             name: true,
           },
         },
@@ -41,7 +42,10 @@ export class InvoicesService {
 
     return this.invoiceRepository
       .createQueryBuilder('invoice')
-      .where('invoice.id::text LIKE :search', { search: `${search}%` })
+      .where('invoice.id::text LIKE :search OR invoice.notes LIKE :notes', {
+        search: `${search}%`,
+        notes: `%${search}%`,
+      })
       .limit(pagination?.limit ?? 5)
       .offset(pagination?.offset ?? 0)
       .getMany();
@@ -52,6 +56,7 @@ export class InvoicesService {
       where: { id },
       relations: {
         customer: true,
+        collection: true,
         deliveryReceipts: {
           purchaseOrder: true,
           lineItems: {

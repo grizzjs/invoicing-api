@@ -27,6 +27,9 @@ export class Customer {
   @Column()
   tin: string;
 
+  @Column({ nullable: true })
+  notes: string;
+
   @JoinColumn({ name: 'customer_id' })
   @OneToMany(() => Invoice, (invoice) => invoice.customer)
   invoices: Invoice[];

@@ -44,7 +44,10 @@ export class DeliveryReceiptsService {
 
     return this.deliveryReceiptRepository
       .createQueryBuilder('delivery_receipt')
-      .where('delivery_receipt.id::text LIKE :search', { search: `${search}%` })
+      .where(
+        'delivery_receipt.id::text LIKE :search OR delivery_receipt.notes LIKE :notes',
+        { search: `${search}%`, notes: `%${search}%` },
+      )
       .limit(pagination?.limit ?? 5)
       .offset(pagination?.offset ?? 0)
       .getMany();

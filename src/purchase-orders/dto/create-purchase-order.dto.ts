@@ -1,4 +1,4 @@
-import { ApiProperty, PartialType } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsArray,
@@ -46,12 +46,15 @@ export class CreatePurchaseOrderDto {
   })
   @IsString()
   readonly status:
-    | 'Draft'
-    | 'Finalized'
-    | 'Approved'
-    | 'Cancelled'
-    | 'Pending'
-    | 'Completed';
+    'Draft' | 'Finalized' | 'Approved' | 'Cancelled' | 'Pending' | 'Completed';
+
+  @ApiPropertyOptional({
+    description: 'Notes for this purchase order',
+    nullable: true,
+  })
+  @IsString()
+  @IsOptional()
+  notes: string;
 
   @ApiProperty({
     description: 'Customer associated with the purchase order',

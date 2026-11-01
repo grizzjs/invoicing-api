@@ -1,5 +1,11 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsDate, IsNumber } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  IsArray,
+  IsDate,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreateInvoiceDto {
   @ApiProperty({ description: 'Date the delivery receipt was created' })
@@ -9,6 +15,14 @@ export class CreateInvoiceDto {
   @ApiProperty({ description: 'The number of days the invoice will be due.' })
   @IsNumber()
   readonly dueInDays: number;
+
+  @ApiPropertyOptional({
+    description: 'Notes for this invoice',
+    nullable: true,
+  })
+  @IsString()
+  @IsOptional()
+  notes: string;
 
   @ApiProperty({
     description: 'Delivery receipts associated with the invoice',

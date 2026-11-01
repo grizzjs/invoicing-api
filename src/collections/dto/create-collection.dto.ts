@@ -1,37 +1,49 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { CustomerDto } from 'src/customers/dto/customer.dto';
-import { InvoiceDto } from 'src/invoices/dto/invoice.dto';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  IsArray,
+  IsDate,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreateCollectionDto {
   @ApiProperty({
     description: 'Date of creation of the collection',
   })
+  @IsDate()
   createDate: Date;
 
   @ApiProperty({
     description: 'Amount collected',
   })
+  @IsNumber()
   amount: number;
 
   @ApiProperty({
     description: 'Vat withheld from invoices',
   })
+  @IsNumber()
   vat: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Notes for this collection',
+    nullable: true,
   })
+  @IsString()
+  @IsOptional()
   notes: string;
 
   @ApiProperty({
     description: 'Customer associated with the collection',
-    type: () => CustomerDto,
   })
-  customer: CustomerDto;
+  @IsNumber()
+  customer: number;
 
   @ApiProperty({
     description: 'Invoices paid for this collection',
-    type: () => [InvoiceDto],
+    type: () => [Number],
   })
-  invoices: InvoiceDto[];
+  @IsArray()
+  invoices: number[];
 }

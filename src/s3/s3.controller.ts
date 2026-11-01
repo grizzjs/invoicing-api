@@ -8,10 +8,12 @@ import {
   UploadedFile,
   ParseFilePipe,
   MaxFileSizeValidator,
+  StreamableFile,
 } from '@nestjs/common';
-import { ApiOkResponse } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiOkResponse } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as s3Service from './s3.service';
+import { S3UploadDto } from './dto/s3.dto';
 
 @Controller('s3')
 export class S3Controller {
@@ -32,35 +34,39 @@ export class S3Controller {
   @Get('/:resource/:id/:key')
   @ApiOkResponse({
     description: 'Download file',
-    type: Buffer,
+    schema: { type: 'string', format: 'binary' },
   })
   async downloadFile(
     @Param('resource') resource: s3Service.RESOURCES,
     @Param('id') id: string,
     @Param('key') key: string,
-  ): Promise<Buffer> {
+  ): Promise<StreamableFile> {
     const file = await this.s3Service.downloadFiles(resource, id, key);
     if (!file || !file?.Body) {
       throw new HttpNotFoundException(`Resource not found: ${key}`);
     } else {
       const bytes = await file.Body.transformToByteArray();
-      return Buffer.from(bytes);
+      return new StreamableFile(bytes, {
+        type: file.ContentType ?? 'application/octet-stream',
+        disposition: `attachment; filename*=UTF-8''${encodeURIComponent(key)}`,
+        length: bytes.length,
+      });
     }
   }
 
   @Post('/:resource/:id')
-  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
   @ApiOkResponse({
     description: 'Download file',
   })
+  @ApiBody({ type: S3UploadDto })
+  @UseInterceptors(FileInterceptor('file'))
   async uploadFile(
     @Param('resource') resource: s3Service.RESOURCES,
     @Param('id') id: string,
     @UploadedFile(
       new ParseFilePipe({
-        validators: [
-          new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }), // 10 MB
-        ],
+        validators: [new MaxFileSizeValidator({ maxSize: 20 * 1024 * 1024 })],
       }),
     )
     file: Express.Multer.File,

@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsOptional, IsString } from 'class-validator';
 import { InvoiceDto } from 'src/invoices/dto/invoice.dto';
 
 export class CustomerDto {
@@ -21,6 +22,14 @@ export class CustomerDto {
     description: 'Taxpayer Identification Number of the customer',
   })
   readonly tin: string;
+
+  @ApiProperty({
+    description: 'Notes for this customer',
+    nullable: true,
+  })
+  @IsString()
+  @IsOptional()
+  notes: string;
 
   @ApiProperty({
     description: 'Outstanding invoices of the customer',

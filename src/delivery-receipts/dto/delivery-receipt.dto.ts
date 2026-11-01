@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDate, IsNumber, IsObject, IsString } from 'class-validator';
+import {
+  IsDate,
+  IsNumber,
+  IsObject,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import {
   PurchaseOrderDto,
   PurchaseOrderLineItemDto,
@@ -76,6 +82,14 @@ export class DeliveryReceiptDto {
     type: () => PurchaseOrderDto,
   })
   readonly purchaseOrder: PurchaseOrderDto;
+
+  @ApiProperty({
+    description: 'Notes for this delivery receipt',
+    nullable: true,
+  })
+  @IsString()
+  @IsOptional()
+  notes: string;
 
   @ApiProperty({
     description: 'Status changes in the delivery receipt',

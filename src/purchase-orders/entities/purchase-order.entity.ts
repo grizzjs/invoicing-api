@@ -17,15 +17,13 @@ export class PurchaseOrder {
 
   @Column()
   status:
-    | 'Draft'
-    | 'Finalized'
-    | 'Approved'
-    | 'Cancelled'
-    | 'Pending'
-    | 'Completed';
+    'Draft' | 'Finalized' | 'Approved' | 'Cancelled' | 'Pending' | 'Completed';
 
   @Column({ name: 'create_date' })
   createDate: Date;
+
+  @Column({ nullable: true })
+  notes: string;
 
   @JoinColumn({ name: 'customer_id' })
   @ManyToOne(() => Customer)

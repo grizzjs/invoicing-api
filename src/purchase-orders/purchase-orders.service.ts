@@ -36,6 +36,7 @@ export class PurchaseOrdersService {
             invoice: {
               id: true,
             },
+            status: true,
           },
         },
         relations: {
@@ -53,7 +54,10 @@ export class PurchaseOrdersService {
 
     return this.purchaseOrderRepository
       .createQueryBuilder('purchase_order')
-      .where('purchase_order.id::text LIKE :search', { search: `${search}%` })
+      .where(
+        'purchase_order.id::text LIKE :search OR purchase_order.notes LIKE :notes',
+        { search: `${search}%`, notes: `%${search}%` },
+      )
       .limit(pagination?.limit ?? 5)
       .offset(pagination?.offset ?? 0)
       .getMany();

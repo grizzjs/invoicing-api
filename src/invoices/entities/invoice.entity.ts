@@ -37,6 +37,9 @@ export class Invoice {
   })
   amount: number;
 
+  @Column({ nullable: true })
+  notes: string;
+
   @Column({ name: 'official_receipt', nullable: true })
   officialReceipt: number;
 

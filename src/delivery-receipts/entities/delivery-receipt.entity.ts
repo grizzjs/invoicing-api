@@ -22,6 +22,9 @@ export class DeliveryReceipt {
   @Column({ name: 'status' })
   status: 'New' | 'Shipped' | 'Delivered' | 'Paid';
 
+  @Column({ nullable: true })
+  notes: string;
+
   @JoinColumn({ name: 'po_id' })
   @ManyToOne(
     () => PurchaseOrder,
