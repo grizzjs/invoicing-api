@@ -1,5 +1,11 @@
 export class NotFoundException extends Error {
-  constructor(id: string) {
-    super(`Entity with id ${id} was not found.`);
+  constructor(model: string, id: string) {
+    super(`Entity [${model}] with id ${id} was not found.`);
+  }
+}
+
+export class UnprocessableEntityException extends Error {
+  constructor(model: string, message?: string) {
+    super(`Failed to process entity [${model}] generation. ${message}`);
   }
 }
