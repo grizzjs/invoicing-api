@@ -24,10 +24,21 @@ export class CreateInvoiceDto {
   @IsOptional()
   notes: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Delivery receipts associated with the invoice',
     type: () => [Number],
+    required: false,
   })
   @IsArray()
-  deliveryReceipts: number[];
+  @IsOptional()
+  deliveryReceipts?: number[];
+
+  @ApiPropertyOptional({
+    description: 'Job orders associated with the invoice',
+    type: () => [Number],
+    required: false,
+  })
+  @IsArray()
+  @IsOptional()
+  jobOrders?: number[];
 }

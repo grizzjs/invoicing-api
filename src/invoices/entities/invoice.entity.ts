@@ -11,6 +11,7 @@ import { Customer } from 'src/customers/entities/customer.entity';
 import { DeliveryReceipt } from 'src/delivery-receipts/entities/delivery-receipt.entity';
 import { ColumnNumericTransformer } from 'src/common/util/column-numeric-transformer.util';
 import { Collection } from 'src/collections/entities/collection.entity';
+import { JobOrder } from 'src/job-orders/entities/job-order.entity';
 
 @Entity()
 export class Invoice {
@@ -52,9 +53,13 @@ export class Invoice {
     () => DeliveryReceipt,
     (deliveryReceipt) => deliveryReceipt.invoice,
   )
-  deliveryReceipts: DeliveryReceipt[];
+  deliveryReceipts?: DeliveryReceipt[];
 
   @JoinColumn({ name: 'collection_id' })
   @ManyToOne(() => Collection)
   collection: Collection;
+
+  @JoinColumn({ name: 'invoice_id' })
+  @OneToMany(() => JobOrder, (jobOrder) => jobOrder.invoice)
+  jobOrders?: JobOrder[];
 }

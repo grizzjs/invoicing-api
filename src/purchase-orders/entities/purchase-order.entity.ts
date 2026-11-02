@@ -31,7 +31,7 @@ export class PurchaseOrder {
 
   @JoinColumn({ name: 'purchase_order_id' })
   @OneToMany(() => PurchaseOrderLineItem, (lineItem) => lineItem.purchaseOrder)
-  lineItems: PurchaseOrderLineItem[];
+  lineItems?: PurchaseOrderLineItem[];
 
   @JoinColumn({ name: 'purchase_order_id' })
   @OneToMany(

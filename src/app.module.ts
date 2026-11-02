@@ -10,24 +10,12 @@ import { DeliveryReceiptsModule } from './delivery-receipts/delivery-receipts.mo
 import { InvoicesModule } from './invoices/invoices.module';
 import { CollectionsModule } from './collections/collections.module';
 import { S3Module } from './s3/s3.module';
+import { JobOrdersModule } from './job-orders/job-orders.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
     ConfigsModule,
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule.forFeature(DB_CONFIG)],
-      useFactory: (dbConfig: ConfigType<typeof DB_CONFIG>) => ({
-        type: 'postgres',
-        host: dbConfig.host,
-        port: dbConfig.port,
-        username: dbConfig.username,
-        password: dbConfig.password,
-        database: dbConfig.schema,
-        autoLoadEntities: true,
-        synchronize: true,
-      }),
-      inject: [DB_CONFIG.KEY],
-    }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule.forFeature(DB_CONFIG)],
       useFactory: (dbConfig: ConfigType<typeof DB_CONFIG>) => ({
@@ -62,10 +50,12 @@ import { S3Module } from './s3/s3.module';
     }),
     CustomersModule,
     PurchaseOrdersModule,
+    JobOrdersModule,
     DeliveryReceiptsModule,
     InvoicesModule,
     CollectionsModule,
     S3Module,
+    AuthModule,
   ],
 })
 export class AppModule {}

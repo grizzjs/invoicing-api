@@ -11,12 +11,15 @@ import {
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { DeliveryReceipt } from 'src/delivery-receipts/entities/delivery-receipt.entity';
 import { uniq } from 'ramda';
+import { JobOrder } from 'src/job-orders/entities/job-order.entity';
 
 @Injectable()
 export class InvoicesService {
   constructor(
     @InjectRepository(Invoice)
     private invoiceRepository: Repository<Invoice>,
+    @InjectRepository(JobOrder)
+    private jobOrderRepository: Repository<JobOrder>,
     @InjectRepository(DeliveryReceipt)
     private deliveryReceiptRepository: Repository<DeliveryReceipt>,
   ) {}
@@ -63,6 +66,9 @@ export class InvoicesService {
             purchaseOrderLineItem: true,
           },
         },
+        jobOrders: {
+          lineItems: true,
+        },
       },
     });
     if (!invoice) throw new NotFoundException(Invoice.name, `${id}`);
@@ -70,29 +76,68 @@ export class InvoicesService {
   }
 
   async create(invoiceDto: CreateInvoiceDto): Promise<InvoiceDto> {
-    const drs = await this.deliveryReceiptRepository.find({
-      where: {
-        id: In(invoiceDto.deliveryReceipts),
-      },
-      relations: {
-        purchaseOrder: {
-          customer: true,
+    let drs: DeliveryReceipt[] = [];
+    let jos: JobOrder[] = [];
+    let amount = 0;
+    let customerId: number = -1;
+    if (invoiceDto.deliveryReceipts) {
+      drs = await this.deliveryReceiptRepository.find({
+        where: {
+          id: In(invoiceDto.deliveryReceipts),
         },
-        lineItems: {
-          purchaseOrderLineItem: true,
+        relations: {
+          purchaseOrder: {
+            customer: true,
+          },
+          lineItems: {
+            purchaseOrderLineItem: true,
+          },
         },
-      },
-    });
+      });
 
-    const customers = uniq(drs.map((dr) => dr.purchaseOrder.customer.id));
-    const amount = drs
-      .flatMap((dr) => dr.lineItems)
-      .reduce(
-        (result, li) =>
-          result + li.quantity * li.purchaseOrderLineItem.unitPrice,
-        0,
-      );
-    if (customers.length > 1)
+      const customers = uniq(drs.map((dr) => dr.purchaseOrder.customer.id));
+      amount = drs
+        .flatMap((dr) => dr.lineItems)
+        .reduce(
+          (result, li) =>
+            result + li.quantity * li.purchaseOrderLineItem.unitPrice,
+          0,
+        );
+      if (customers.length > 1)
+        throw new UnprocessableEntityException(
+          Invoice.name,
+          'Cannot create invoice from different customers',
+        );
+
+      customerId = customers[0];
+    }
+
+    if (invoiceDto.jobOrders) {
+      jos = await this.jobOrderRepository.find({
+        where: {
+          id: In(invoiceDto.jobOrders),
+        },
+        relations: {
+          customer: true,
+          lineItems: true,
+        },
+      });
+
+      const customers = uniq(jos.map((jo) => jo.customer.id));
+      amount = jos
+        .flatMap((jo) => jo.lineItems)
+        .reduce((result, li) => result + li.quantity * li.unitPrice, 0);
+
+      if (customers.length > 1)
+        throw new UnprocessableEntityException(
+          Invoice.name,
+          'Cannot create invoice from different customers',
+        );
+
+      customerId = customers[0];
+    }
+
+    if (customerId === -1)
       throw new UnprocessableEntityException(
         Invoice.name,
         'Cannot create invoice from different customers',
@@ -100,13 +145,17 @@ export class InvoicesService {
 
     const invoiceWithId = this.invoiceRepository.create({
       customer: {
-        id: customers[0],
+        id: customerId,
       },
       createDate: invoiceDto.createDate,
       term: invoiceDto.dueInDays > 0 ? 'Charge' : 'Cash',
       status: 'Unpaid',
+      notes: invoiceDto.notes,
       dueInDays: invoiceDto.dueInDays,
-      deliveryReceipts: invoiceDto.deliveryReceipts.map((id) => {
+      deliveryReceipts: invoiceDto?.deliveryReceipts?.map((id) => {
+        return { id };
+      }),
+      jobOrders: invoiceDto?.jobOrders?.map((id) => {
         return { id };
       }),
       amount,

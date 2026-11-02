@@ -12,23 +12,27 @@ export type RESOURCES =
   | 'purchase-order'
   | 'collection-receipt';
 
-const filenameToKey = (originalname: string): string => {
-  // Multer decodes UTF-8 names as latin1; restore them
-  const name = Buffer.from(originalname, 'latin1').toString('utf8');
+const filenameToKey = (name: string): string => {
+  // Normalize so NFC/NFD variants of the same name map to one key
+  // (macOS screenshot names contain U+202F before AM/PM)
+  const normalized = name.normalize('NFC');
 
-  const encoded = encodeURIComponent(name).replace(
+  const encoded = encodeURIComponent(normalized).replace(
     /[!'()*]/g,
-    (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`,
+    (c) => `%${c.charCodeAt(0).toString(16).toUpperCase().padStart(2, '0')}`,
   );
 
   // "." and ".." are valid after encoding but problematic as keys
-  const safe = /^\.+$/.test(encoded) ? encoded.replace(/\./g, '%2E') : encoded;
-
-  return safe;
+  return /^\.+$/.test(encoded) ? encoded.replace(/\./g, '%2E') : encoded;
 };
 
 const keyToFilename = (key: string): string => {
-  return decodeURIComponent(key);
+  try {
+    return decodeURIComponent(key);
+  } catch {
+    // Not a valid percent-encoded key (legacy/foreign data): return as-is
+    return key;
+  }
 };
 
 @Injectable()
@@ -78,5 +82,15 @@ export class S3Service {
     };
 
     return this.s3.putObject(params);
+  }
+
+  async deleteFile(type: RESOURCES, id: string, filename: string) {
+    const params = {
+      Bucket: this.s3Config.bucket,
+      Key: `${type}/${id}/${filenameToKey(filename)}`,
+    };
+
+    await this.s3.deleteObject(params);
+    return;
   }
 }

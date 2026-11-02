@@ -9,6 +9,7 @@ import {
   ParseFilePipe,
   MaxFileSizeValidator,
   StreamableFile,
+  Delete,
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiOkResponse } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -57,7 +58,7 @@ export class S3Controller {
   @Post('/:resource/:id')
   @ApiConsumes('multipart/form-data')
   @ApiOkResponse({
-    description: 'Download file',
+    description: 'Upload file',
   })
   @ApiBody({ type: S3UploadDto })
   @UseInterceptors(FileInterceptor('file'))
@@ -73,5 +74,18 @@ export class S3Controller {
   ): Promise<void> {
     await this.s3Service.uploadFile(resource, id, file);
     return;
+  }
+
+  @Delete('/:resource/:id/:filename')
+  @ApiOkResponse({
+    description: 'Delete file',
+    type: [String],
+  })
+  deleteFile(
+    @Param('resource') resource: s3Service.RESOURCES,
+    @Param('id') id: string,
+    @Param('filename') filename: string,
+  ): Promise<void> {
+    return this.s3Service.deleteFile(resource, id, filename);
   }
 }

@@ -87,7 +87,7 @@ export class PurchaseOrderDto {
     description: 'Line items in the purchase order',
     type: [PurchaseOrderLineItemDto],
   })
-  lineItems: PurchaseOrderLineItemDto[];
+  lineItems?: PurchaseOrderLineItemDto[];
 
   @ApiProperty({
     description: 'Delivery receipts associated with the purchase order',
