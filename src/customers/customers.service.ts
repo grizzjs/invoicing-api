@@ -30,7 +30,7 @@ export class CustomersService {
 
     return this.customerRepository
       .createQueryBuilder('customer')
-      .where('customer.id::text LIKE :search OR customer.notes LIKE :notes', {
+      .where('customer.id::text ILIKE :search OR customer.notes ILIKE :notes', {
         search: `${search}%`,
         notes: `%${search}%`,
       })

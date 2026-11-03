@@ -41,7 +41,7 @@ export class CollectionsService {
     return this.collectionRepository
       .createQueryBuilder('collection')
       .where(
-        'collection.id::text LIKE :search OR collection.notes LIKE :notes',
+        'collection.id::text ILIKE :search OR collection.notes ILIKE :notes',
         { search: `${search}%`, notes: `%${search}%` },
       )
       .limit(pagination?.limit ?? 5)

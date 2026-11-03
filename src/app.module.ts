@@ -35,6 +35,7 @@ import { AuthModule } from './auth/auth.module';
       useFactory: (s3Config: ConfigType<typeof S3_CONFIG>) => {
         const config = {
           config: {
+            region: 'us-east-1',
             credentials: {
               accessKeyId: s3Config.accessKey,
               secretAccessKey: s3Config.secretKey,

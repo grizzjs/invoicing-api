@@ -45,7 +45,7 @@ export class InvoicesService {
 
     return this.invoiceRepository
       .createQueryBuilder('invoice')
-      .where('invoice.id::text LIKE :search OR invoice.notes LIKE :notes', {
+      .where('invoice.id::text ILIKE :search OR invoice.notes ILIKE :notes', {
         search: `${search}%`,
         notes: `%${search}%`,
       })

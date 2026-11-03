@@ -1,7 +1,7 @@
 import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JobOrder } from './entities/job-order.entity';
-import { DataSource, FindManyOptions, Repository } from 'typeorm';
+import { Brackets, DataSource, FindManyOptions, Repository } from 'typeorm';
 import { NotFoundException } from 'src/exceptions';
 import { CreateJobOrderDto } from './dto/create-job-order.dto';
 import { UpdateJobOrderDto } from './dto/update-job-order.dto';
@@ -43,13 +43,21 @@ export class JobOrdersService {
       .createQueryBuilder('job_order')
       .leftJoinAndSelect('job_order.customer', 'customer')
       .leftJoinAndSelect('job_order.invoice', 'invoice')
-      .leftJoinAndSelect('job_order.lineItems', 'lineItems')
-      .where('job_order.id::text LIKE :search OR job_order.notes LIKE :notes', {
-        search: `${search}%`,
-        notes: `%${search}%`,
-      })
-      .limit(pagination?.limit ?? 5)
-      .offset(pagination?.offset ?? 0)
+      .leftJoinAndSelect('job_order.lineItems', 'line_items')
+      .where(
+        new Brackets((qb) => {
+          qb.where('job_order.id::text ILIKE :search', { search: `${search}%` })
+            .orWhere('job_order.notes ILIKE :notes', { notes: `%${search}%` })
+            .orWhere('line_items.name ILIKE :notes', {
+              notes: `%${search}%`,
+            })
+            .orWhere('line_items.description ILIKE :notes', {
+              notes: `%${search}%`,
+            });
+        }),
+      )
+      .take(pagination?.limit ?? 5)
+      .skip(pagination?.offset ?? 0)
       .getMany();
   }
 

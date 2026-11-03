@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { Brackets, DataSource, Repository } from 'typeorm';
 import {
   NotFoundException,
   UnprocessableEntityException,
@@ -44,12 +44,27 @@ export class DeliveryReceiptsService {
 
     return this.deliveryReceiptRepository
       .createQueryBuilder('delivery_receipt')
+      .leftJoin('delivery_receipt.lineItems', 'line_item')
+      .leftJoin('line_item.purchaseOrderLineItem', 'purchase_order_line_item')
       .where(
-        'delivery_receipt.id::text LIKE :search OR delivery_receipt.notes LIKE :notes',
-        { search: `${search}%`, notes: `%${search}%` },
+        new Brackets((qb) => {
+          qb.where('delivery_receipt.id::text ILIKE :search', {
+            search: `${search}%`,
+          })
+            .orWhere('delivery_receipt.notes ILIKE :notes', {
+              notes: `%${search}%`,
+            })
+            .orWhere('purchase_order_line_item.name ILIKE :notes', {
+              notes: `%${search}%`,
+            })
+            .orWhere('purchase_order_line_item.description ILIKE :notes', {
+              notes: `%${search}%`,
+            });
+        }),
       )
-      .limit(pagination?.limit ?? 5)
-      .offset(pagination?.offset ?? 0)
+      .distinct(true)
+      .take(pagination?.limit ?? 5)
+      .skip(pagination?.offset ?? 0)
       .getMany();
   }
 

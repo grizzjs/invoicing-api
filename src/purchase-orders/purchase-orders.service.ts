@@ -1,7 +1,7 @@
 import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PurchaseOrder } from './entities/purchase-order.entity';
-import { DataSource, FindManyOptions, Repository } from 'typeorm';
+import { Brackets, DataSource, FindManyOptions, Repository } from 'typeorm';
 import { NotFoundException } from 'src/exceptions';
 import { CreatePurchaseOrderDto } from './dto/create-purchase-order.dto';
 import { UpdatePurchaseOrderDto } from './dto/update-purchase-order.dto';
@@ -54,12 +54,26 @@ export class PurchaseOrdersService {
 
     return this.purchaseOrderRepository
       .createQueryBuilder('purchase_order')
+      .leftJoin('purchase_order.lineItems', 'purchase_order_line_item')
       .where(
-        'purchase_order.id::text LIKE :search OR purchase_order.notes LIKE :notes',
-        { search: `${search}%`, notes: `%${search}%` },
+        new Brackets((qb) => {
+          qb.where('purchase_order.id::text ILIKE :search', {
+            search: `${search}%`,
+          })
+            .orWhere('purchase_order.notes ILIKE :notes', {
+              notes: `%${search}%`,
+            })
+            .orWhere('purchase_order_line_item.name ILIKE :notes', {
+              notes: `%${search}%`,
+            })
+            .orWhere('purchase_order_line_item.description ILIKE :notes', {
+              notes: `%${search}%`,
+            });
+        }),
       )
-      .limit(pagination?.limit ?? 5)
-      .offset(pagination?.offset ?? 0)
+      .distinct(true)
+      .take(pagination?.limit ?? 5)
+      .skip(pagination?.offset ?? 0)
       .getMany();
   }
 
