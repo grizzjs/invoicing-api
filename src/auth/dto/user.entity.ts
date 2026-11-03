@@ -10,3 +10,9 @@ export class UserDto {
   @IsString()
   password: string;
 }
+
+export class UserToken {
+  @ApiProperty()
+  @IsString()
+  access_token: string;
+}
